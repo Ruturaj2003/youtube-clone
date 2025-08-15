@@ -6,6 +6,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import { FlameIcon, HomeIcon, PlaySquareIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -29,6 +30,9 @@ const items = [
 ];
 
 export const MainSection = () => {
+  const clerk = useClerk();
+  const { isSignedIn } = useAuth();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent>
@@ -40,7 +44,12 @@ export const MainSection = () => {
                   tooltip={item.title}
                   asChild
                   isActive={false} // TODO : Change To Look At path name
-                  onClick={() => {}} // TODO : Do Something on CLick
+                  onClick={(e) => {
+                    if (!isSignedIn && item.auth) {
+                      e.preventDefault();
+                      return clerk.openSignIn();
+                    }
+                  }}
                 >
                   <Link href={item.url} className="fkex items-center gap-4">
                     <item.icon></item.icon>
