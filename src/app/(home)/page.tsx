@@ -3,7 +3,7 @@ import { DOta } from "./dota";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 export default async function Home() {
-  void trpc.hello({ text: "As" });
+  void trpc.hello.prefetch({ text: "As" });
   return (
     <HydrateClient>
       <Suspense fallback={"Loading"}>
