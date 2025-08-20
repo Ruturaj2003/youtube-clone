@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { videos } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { eq, and, or, gt, desc } from "drizzle-orm";
+import { eq, and, or, desc, lt } from "drizzle-orm";
 import z from "zod";
 
 export const studioRouter = createTRPCRouter({
@@ -32,11 +32,11 @@ export const studioRouter = createTRPCRouter({
             cursor
               ? or(
                   // if cursor exists, get videos newer than cursor
-                  gt(videos.updatedAt, cursor.updatedAt),
+                  lt(videos.updatedAt, cursor.updatedAt),
                   // if same updatedAt, use id to break the tie
                   and(
                     eq(videos.updatedAt, cursor.updatedAt),
-                    gt(videos.id, cursor.id)
+                    lt(videos.id, cursor.id)
                   )
                 )
               : undefined // if no cursor, just load first set
