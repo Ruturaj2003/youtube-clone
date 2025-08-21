@@ -24,7 +24,6 @@ export const CategoriesSection = ({ categoryId }: CategoriesSectionProps) => {
 
 const CategoriesSectionSuspense = ({ categoryId }: CategoriesSectionProps) => {
   const router = useRouter();
-  console.log(categoryId);
 
   const [categories] = trpc.categories.getMany.useSuspenseQuery();
 
