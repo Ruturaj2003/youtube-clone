@@ -67,7 +67,9 @@ const VideoSectionSuspense = () => {
                         <div className="flex items-center gap-4 ">
                           <div className="relative aspect-video w-36 shrink-0 ">
                             <VideoThumbnail
-                              imageUrl={video.thumbnailUrl ?? undefined}
+                              imageUrl={video.thumbnailUrl}
+                              previewUrl={video.previewUrl}
+                              title={video.title}
                             />
                           </div>
                         </div>

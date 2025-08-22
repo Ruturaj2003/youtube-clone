@@ -71,6 +71,8 @@ export const POST = async (req: Request) => {
 
       const thumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg`;
 
+      const previewUrl = `https://image.mux.com/${playbackId}/animated.gif`;
+
       await db
         .update(videos)
         .set({
@@ -78,6 +80,7 @@ export const POST = async (req: Request) => {
           muxPlaybackId: playbackId,
           musxAssetId: data.id,
           thumbnailUrl,
+          previewUrl,
         })
         .where(eq(videos.muxUploadId, data.upload_id));
 
