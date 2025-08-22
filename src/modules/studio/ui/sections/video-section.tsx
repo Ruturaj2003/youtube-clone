@@ -10,6 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DEFAULT_LIMIT } from "@/constants";
+import { VideoThumbnail } from "@/modules/videos/ui/components/video-thumbnail";
+
 import { trpc } from "@/trpc/client";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -61,7 +63,15 @@ const VideoSectionSuspense = () => {
                     key={video.id}
                   >
                     <TableRow>
-                      <TableCell>{video.title}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-4 ">
+                          <div className="relative aspect-video w-36 shrink-0 ">
+                            <VideoThumbnail
+                              imageUrl={video.thumbnailUrl ?? undefined}
+                            />
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell>Visbiliy</TableCell>
                       <TableCell>Status </TableCell>
                       <TableCell>Date</TableCell>
