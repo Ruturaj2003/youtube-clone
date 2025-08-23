@@ -1,12 +1,15 @@
 import { relations } from "drizzle-orm";
 import {
   integer,
+  pgEnum,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+
+export const viedoVisibilty = pgEnum("video_visibilty", ["private", "public"]);
 
 /* ============================
    USERS TABLE
@@ -62,6 +65,7 @@ export const videos = pgTable("videos", {
   title: text("title").notNull(),
   description: text("description"),
   duration: integer("duration"),
+  visibility: viedoVisibilty("visibility").default("private").notNull(),
 
   // Mux integration fields
   muxStatus: text("mux_status"),
