@@ -1,6 +1,7 @@
 "use client";
 
 import { InfiniteScroll } from "@/components/infinite-scroll";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -15,17 +16,80 @@ import { VideoThumbnail } from "@/modules/videos/ui/components/video-thumbnail";
 
 import { trpc } from "@/trpc/client";
 import { format } from "date-fns";
+import { Globe2Icon, LockIcon } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 export const VideoSection = () => {
   return (
-    <Suspense fallback={<p>Loading....</p>}>
+    <Suspense fallback={<VideoSectionSkeleton />}>
       <ErrorBoundary fallback={<p>Error</p>}>
         <VideoSectionSuspense />
       </ErrorBoundary>
     </Suspense>
+  );
+};
+
+const VideoSectionSkeleton = () => {
+  // show 5 fake rows
+  const fakeRows = Array.from({ length: 5 });
+
+  return (
+    <div className="border-y">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="pl-6 w-[510px]">Video</TableHead>
+            <TableHead>Visibility</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead className="text-right">Views</TableHead>
+            <TableHead className="text-right">Comments</TableHead>
+            <TableHead className="text-right pr-6">Likes</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {fakeRows.map((_, i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <div className="flex items-center gap-4">
+                  <Skeleton className="aspect-video w-36 rounded-md" />
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-56" />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell>
+                <div className="flex justify-end">
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex justify-end">
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex justify-end pr-6">
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
@@ -85,7 +149,16 @@ const VideoSectionSuspense = () => {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>Visbiliy</TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          {video.visibility === "private" ? (
+                            <LockIcon className="size-4 mr-2" />
+                          ) : (
+                            <Globe2Icon className="size-4 mr-2" />
+                          )}
+                          {snakeCaseToTitle(video.visibility)}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           {snakeCaseToTitle(video.muxStatus || "Error")}
