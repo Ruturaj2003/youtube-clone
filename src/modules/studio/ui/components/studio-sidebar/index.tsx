@@ -31,7 +31,7 @@ export const StudioSidebar = () => {
                 asChild
                 tooltip={"Content"}
               >
-                <Link href={"/studio/videos"}>
+                <Link href={"/studio"}>
                   <VideoIcon className="size-5" />
                   Content
                 </Link>
