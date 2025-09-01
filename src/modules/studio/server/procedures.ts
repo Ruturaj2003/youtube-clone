@@ -1,10 +1,36 @@
 import { db } from "@/db";
 import { videos } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { TRPCError } from "@trpc/server";
 import { eq, and, or, desc, lt } from "drizzle-orm";
 import z from "zod";
 
 export const studioRouter = createTRPCRouter({
+  getOne: protectedProcedure
+    .input(
+      // validate input -> must be a UUID string
+      z.object({
+        id: z.string().uuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user; // current logged-in user
+      const { id } = input; // requested video id
+
+      // fetch video that belongs to the user and matches id
+      const [video] = await db
+        .select()
+        .from(videos)
+        .where(and(eq(videos.id, id), eq(videos.userId, userId)));
+
+      if (!video) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+        });
+      }
+      return video; // return single video or undefined
+    }),
+
   getMany: protectedProcedure
     // Check the input shape with zod
     .input(

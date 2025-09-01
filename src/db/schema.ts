@@ -9,6 +9,12 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import {
+  createInsertSchema,
+  createUpdateSchema,
+  createSelectSchema,
+} from "drizzle-zod";
+
 export const viedoVisibilty = pgEnum("video_visibilty", ["private", "public"]);
 
 /* ============================
@@ -92,6 +98,10 @@ export const videos = pgTable("videos", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const videoInsertSchema = createInsertSchema(videos);
+export const videoUpdateSchema = createUpdateSchema(videos);
+export const videoSelectSchema = createSelectSchema(videos);
 
 /* ============================
    RELATIONSHIPS
