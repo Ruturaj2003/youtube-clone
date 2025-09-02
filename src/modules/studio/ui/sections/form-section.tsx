@@ -1,12 +1,19 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { MoreVerticalIcon, TrashIcon } from "lucide-react";
+import {
+  CopyCheckIcon,
+  CopyIcon,
+  Globe2Icon,
+  LockIcon,
+  MoreVerticalIcon,
+  TrashIcon,
+} from "lucide-react";
 
 import { trpc } from "@/trpc/client";
 import { videoUpdateSchema } from "@/db/schema";
@@ -35,6 +42,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { VideoPlayer } from "@/modules/videos/ui/components/video-player";
+import Link from "next/link";
+import { snakeCaseToTitle } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 // ----------------------------------
 // Props
@@ -60,11 +71,28 @@ export const FormSection = ({ videoId }: FormSectionProps) => {
 // Main Form Logic
 // ----------------------------------
 export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
+  const router = useRouter();
+
   // Data fetching
   const [video] = trpc.studio.getOne.useSuspenseQuery({ id: videoId });
   const [categories] = trpc.categories.getMany.useSuspenseQuery();
 
   const utils = trpc.useUtils();
+
+  // TODO : CHANGE IF NOT VERCEL
+  const fullUrl = `${
+    process.env.VERCEL_URL || "http://localhost:3000"
+  }/videos/${videoId}`;
+
+  const [isCopied, setIsCopied] = useState(false);
+
+  const onCopy = async () => {
+    await navigator.clipboard.writeText(fullUrl);
+    setIsCopied(true);
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
 
   // React Hook Form setup
   const form = useForm<z.infer<typeof videoUpdateSchema>>({
@@ -72,11 +100,22 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     defaultValues: video,
   });
 
+  const remove = trpc.videos.remove.useMutation({
+    onSuccess: () => {
+      utils.studio.getMany.invalidate();
+      toast.success("Video Deleted");
+      router.push("/studio");
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+  });
   // Mutation
   const update = trpc.videos.update.useMutation({
     onSuccess: () => {
       utils.studio.getMany.invalidate();
       utils.studio.getOne.invalidate({ id: videoId });
+      toast.success("Video Data Updated");
     },
     onError: () => {
       toast.error("Something went wrong");
@@ -94,19 +133,26 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
 
   return (
     <Form {...form}>
+      {/* Main form wrapper that handles validation and submission */}
       <form onSubmit={form.handleSubmit(onSubmit)}>
+        {/* Header section: Title, description, and action buttons */}
         <div className="flex items-center justify-between mb-6">
-          <div className="">
-            <h1 className="text-2xl font-bold   "> Video Details</h1>
+          {/* Left side: Page title and subtitle */}
+          <div>
+            <h1 className="text-2xl font-bold">Video Details</h1>
             <p className="text-xs text-muted-foreground">
               Manage your Video Details Here
             </p>
           </div>
-          {/* For visual ref puprose */}
+
+          {/* Right side: Save button and options menu */}
           <div className="flex items-center gap-x-2">
+            {/* Primary save action (disabled while update is pending) */}
             <Button type="submit" disabled={update.isPending}>
               Save
             </Button>
+
+            {/* Dropdown menu with additional actions (e.g., Delete) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant={"ghost"} size={"icon"}>
@@ -114,19 +160,22 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <TrashIcon className="size-4mr-2" />
+                <DropdownMenuItem
+                  onClick={() => remove.mutate({ id: videoId })}
+                >
+                  <TrashIcon className="size-4 mr-2" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          {/*  */}
         </div>
-        {/* Z */}
+
+        {/* Main form fields section (responsive grid layout) */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Left side: core input fields (title, description, category, etc.) */}
           <div className="space-y-8 lg:col-span-3">
-            {/* Title */}
+            {/* Title field */}
             <FormField
               control={form.control}
               name="title"
@@ -135,19 +184,20 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                   <FormItem>
                     <FormLabel>
                       Title
-                      {/* TODO: Add Ai generate Button */}
+                      {/* TODO: Add AI generate button for title suggestion */}
                     </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         placeholder="Add a title for your video"
-                      ></Input>
+                      />
                     </FormControl>
                   </FormItem>
                 );
               }}
             />
-            {/* Description */}
+
+            {/* Description field */}
             <FormField
               control={form.control}
               name="description"
@@ -156,7 +206,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                   <FormItem>
                     <FormLabel>
                       Description
-                      {/* TODO: Add Ai generate Button */}
+                      {/* TODO: Add AI generate button for description */}
                     </FormLabel>
                     <FormControl>
                       <Textarea
@@ -165,14 +215,16 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                         rows={10}
                         placeholder="Add a description for your video"
                         className="resize-none pr-10"
-                      ></Textarea>
+                      />
                     </FormControl>
                   </FormItem>
                 );
               }}
             />
-            {/* TODO: Add Thumbnail feld */}
-            {/* Category */}
+
+            {/* TODO: Add Thumbnail field in the future */}
+
+            {/* Category selection field */}
             <FormField
               control={form.control}
               name="categoryId"
@@ -204,8 +256,103 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
               }}
             />
           </div>
+
+          {/* Right side */}
+          <div className="flex flex-col gap-y-8 lg:col-span-2">
+            {/* 1 */}
+            <div className="flex flex-col gap-4 bg-[#f9f9f9] rounded-xl overflow-hidden h-fit">
+              <div className="aspect-video overflow-hidden relative">
+                {/* Video Player */}
+                <VideoPlayer
+                  playbackId={video.muxPlaybackId}
+                  thumbnailUrl={video.thumbnailUrl}
+                />
+              </div>
+              <div className="p-4 flex flex-col gap-y-6 ">
+                <div className="flex justify-between items-center gap-x-2">
+                  <div className="flex flex-col gap-y-1">
+                    <p className="text-muted-foreground text-xs">Video Link</p>
+                    <div className="flex items-center gap-x-2">
+                      <Link href={`/videos/${video.id}`}>
+                        <p className="line-clamp-1 text-sm text-blue-500">
+                          {fullUrl}
+                        </p>
+                      </Link>
+                      <Button
+                        onClick={onCopy}
+                        disabled={isCopied}
+                        size={"icon"}
+                        className="shrink-0"
+                        type="button"
+                        variant={"ghost"}
+                      >
+                        {isCopied ? <CopyCheckIcon /> : <CopyIcon />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/*  */}
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-y-1">
+                    <p className="text-muted-foreground text-xs">
+                      Video Status
+                    </p>
+                    <p>{snakeCaseToTitle(video.muxStatus || "Preparing")}</p>
+                  </div>
+                </div>
+                {/*  */}
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-y-1">
+                    <p className="text-muted-foreground text-xs">
+                      Subtitle Status
+                    </p>
+                    <p>
+                      {snakeCaseToTitle(video.muxTrackStatus || "no_subtitles")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* 1 */}
+            <FormField
+              control={form.control}
+              name="visibility"
+              render={({ field }) => {
+                return (
+                  <FormItem>
+                    <FormLabel>Visibilty</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value ?? undefined}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Visibilty Status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="public">
+                          <div className="flex items-center">
+                            <Globe2Icon className="size-4 mr-2" />
+                            Public
+                          </div>
+                        </SelectItem>
+
+                        <SelectItem value="private">
+                          <div className="flex items-center">
+                            <LockIcon className="size-4 mr-2" />
+                            Private
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                );
+              }}
+            />
+          </div>
         </div>
-        {/* Z */}
       </form>
     </Form>
   );

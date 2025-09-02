@@ -14,6 +14,7 @@ export const studioRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
+      console.log("GET ONE : ", input.id);
       const { id: userId } = ctx.user; // current logged-in user
       const { id } = input; // requested video id
 

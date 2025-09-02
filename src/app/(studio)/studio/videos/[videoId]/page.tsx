@@ -9,6 +9,7 @@ interface VideoIdPageProps {
 
 const VideoIdPage = async ({ params }: VideoIdPageProps) => {
   const { videoId } = await params;
+  console.log("Page of stud vid prefetch", videoId);
 
   void trpc.studio.getOne.prefetch({ id: videoId });
   void trpc.categories.getMany.prefetch();
