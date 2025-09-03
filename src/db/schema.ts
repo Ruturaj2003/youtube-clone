@@ -83,7 +83,9 @@ export const videos = pgTable("videos", {
 
   // Media URLs
   thumbnailUrl: text("thumbnail_url"),
+  thumbnailKey: text("thumbnail_key"),
   previewUrl: text("preview_url"),
+  previewKey: text("preview_key"),
 
   // Foreign keys
   userId: uuid("user_id")
