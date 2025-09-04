@@ -1,7 +1,11 @@
 import { db } from "@/db";
-import { videos, videoUpdateSchema } from "@/db/schema";
+import { users, videos, videoUpdateSchema } from "@/db/schema";
 import { mux } from "@/lib/mux";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import {
+  baseProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
@@ -134,5 +138,37 @@ export const videosRouter = createTRPCRouter({
         .returning();
 
       return updatedVideo;
+    }),
+
+  getOne: baseProcedure
+    // Step 1: Define the input the procedure expects
+    .input(
+      z.object({
+        id: z.string().uuid(), // input must have an "id" field, and it must be a UUID string
+      })
+    )
+
+    // Step 2: Define the query logic
+    .query(async ({ input }) => {
+      // Step 3: Query the database
+      const [existingVideo] = await db
+        .select() // select data
+        .from(videos) // start with the "videos" table
+        .innerJoin(
+          // join with "users" table
+          users,
+          eq(videos.userId, users.id) // condition: videos.userId = users.id
+        )
+        .where(eq(videos.id, input.id)); // filter: only the video with this specific ID
+
+      // Step 4: Handle case where no video is found
+      if (!existingVideo) {
+        throw new TRPCError({
+          code: "NOT_FOUND", // throw error with "NOT_FOUND" code
+        });
+      }
+
+      // Step 5: Return the found video (including joined user info)
+      return existingVideo;
     }),
 });
