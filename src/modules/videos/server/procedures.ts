@@ -7,7 +7,7 @@ import {
   protectedProcedure,
 } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, getTableColumns } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 
@@ -152,7 +152,13 @@ export const videosRouter = createTRPCRouter({
     .query(async ({ input }) => {
       // Step 3: Query the database
       const [existingVideo] = await db
-        .select() // select data
+        // Dont know why changed the shape here , was perfectly fine
+        .select({
+          ...getTableColumns(videos),
+          user: {
+            ...getTableColumns(users),
+          },
+        }) // select data
         .from(videos) // start with the "videos" table
         .innerJoin(
           // join with "users" table
