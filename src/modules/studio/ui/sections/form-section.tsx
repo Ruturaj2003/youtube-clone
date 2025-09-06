@@ -14,7 +14,6 @@ import {
   LockIcon,
   MoreVerticalIcon,
   RotateCcwIcon,
-  SparklesIcon,
   TrashIcon,
 } from "lucide-react";
 
@@ -281,12 +280,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                                 <ImagePlusIcon className="size-4 mr-1" />
                                 Change
                               </DropdownMenuItem>
-                              {/* 2*/}
-                              <DropdownMenuItem>
-                                <SparklesIcon className="size-4 mr-1" />
-                                AI-Generate
-                              </DropdownMenuItem>
-                              {/*  3*/}
+                              {/*2*/}
                               <DropdownMenuItem
                                 onClick={() => {
                                   restoreThumbnail.mutate({ id: videoId });

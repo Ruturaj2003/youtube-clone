@@ -141,40 +141,38 @@ export const videosRouter = createTRPCRouter({
     }),
 
   getOne: baseProcedure
-    // Step 1: Define the input the procedure expects
+    // Expect an input with a UUID "id"
     .input(
       z.object({
-        id: z.string().uuid(), // input must have an "id" field, and it must be a UUID string
+        id: z.string().uuid(),
       })
     )
 
-    // Step 2: Define the query logic
+    // Define the query
     .query(async ({ input }) => {
-      // Step 3: Query the database
+      // Look up the video with its user
       const [existingVideo] = await db
-        // Dont know why changed the shape here , was perfectly fine
         .select({
           ...getTableColumns(videos),
           user: {
             ...getTableColumns(users),
           },
-        }) // select data
-        .from(videos) // start with the "videos" table
+        })
+        .from(videos)
         .innerJoin(
-          // join with "users" table
           users,
-          eq(videos.userId, users.id) // condition: videos.userId = users.id
+          eq(videos.userId, users.id) // match video.userId with user.id
         )
-        .where(eq(videos.id, input.id)); // filter: only the video with this specific ID
+        .where(eq(videos.id, input.id)); // find by id
 
-      // Step 4: Handle case where no video is found
+      // If no video, throw an error
       if (!existingVideo) {
         throw new TRPCError({
-          code: "NOT_FOUND", // throw error with "NOT_FOUND" code
+          code: "NOT_FOUND",
         });
       }
 
-      // Step 5: Return the found video (including joined user info)
+      // Return the video with its user
       return existingVideo;
     }),
 });

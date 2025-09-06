@@ -16,7 +16,6 @@ const VideoPage = async ({ params }: VideoPageProps) => {
 
   return (
     <HydrateClient>
-      Single Video
       {/* Video view from videos not Studio */}
       {/* Vdieo VIew */}
       <VideoView videoId={videoId} />
