@@ -1,22 +1,61 @@
 import { z } from "zod";
+import { and, eq } from "drizzle-orm";
+
 import { db } from "@/db";
 import { videoViews } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
+// TODO: improve how video count works to be more youtube-like. ex. count views for unsigned users, increase count if user watches video more times.
+
 export const videoViewsRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(z.object({ videoId: z.string().cuid2() }))
+    .input(z.object({ videoId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id;
       const { videoId } = input;
+      const { id: userId } = ctx.user;
 
-      // Insert if not exists, otherwise do nothing
-      const [view] = await db
+      const [existingVideoView] = await db
+        .select()
+        .from(videoViews)
+        .where(
+          and(eq(videoViews.videoId, videoId), eq(videoViews.userId, userId))
+        );
+
+      if (existingVideoView) {
+        return existingVideoView;
+      }
+
+      const [createdVideoView] = await db
         .insert(videoViews)
-        .values({ videoId, userId })
-        .onConflictDoNothing() // prevents duplicate views
+        .values({
+          videoId,
+          userId,
+        })
         .returning();
 
-      return view ?? { videoId, userId };
+      return createdVideoView;
     }),
 });
+
+// import { z } from "zod";
+// import { db } from "@/db";
+// import { videoViews } from "@/db/schema";
+// import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+
+// export const videoViewsRouter = createTRPCRouter({
+//   create: protectedProcedure
+//     .input(z.object({ videoId: z.string().cuid2() }))
+//     .mutation(async ({ ctx, input }) => {
+//       const userId = ctx.user.id;
+//       const { videoId } = input;
+
+//       // Insert if not exists, otherwise do nothing
+//       const [view] = await db
+//         .insert(videoViews)
+//         .values({ videoId, userId })
+//         .onConflictDoNothing() // prevents duplicate views
+//         .returning();
+
+//       return view ?? { videoId, userId };
+//     }),
+// });
