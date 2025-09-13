@@ -1,5 +1,11 @@
 import { db } from "@/db";
-import { users, videos, videoUpdateSchema, videoViews } from "@/db/schema";
+import {
+  users,
+  videoReactions,
+  videos,
+  videoUpdateSchema,
+  videoViews,
+} from "@/db/schema";
 import { mux } from "@/lib/mux";
 import {
   baseProcedure,
@@ -7,7 +13,7 @@ import {
   protectedProcedure,
 } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { and, eq, getTableColumns } from "drizzle-orm";
+import { and, eq, getTableColumns, inArray } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 
@@ -71,6 +77,14 @@ export const videosRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND" });
       }
     }),
+  /*
+    
+    
+    For separation
+    
+    
+    
+    */
   remove: protectedProcedure
     .input(
       z.object({
@@ -90,6 +104,14 @@ export const videosRouter = createTRPCRouter({
       }
       return removedVideo;
     }),
+  /*
+    
+    
+    For separation
+    
+    
+    
+    */
   restoreThumbnail: protectedProcedure
     .input(
       z.object({
@@ -140,40 +162,91 @@ export const videosRouter = createTRPCRouter({
       return updatedVideo;
     }),
 
+  /*
+    
+    
+    For separation
+    
+    
+    
+    */
   getOne: baseProcedure
-    // Expect an input with a UUID "id"
+    // Expect input: an object with a video "id" (must be a UUID)
     .input(
       z.object({
         id: z.string().uuid(),
       })
     )
 
-    // Define the query
-    .query(async ({ input }) => {
-      // Look up the video with its user
+    .query(async ({ input, ctx }) => {
+      // 1️⃣ Get logged-in user's ID (if any)
+      const { clerkUserId } = ctx;
+      let userId;
+
+      // SUBQUERY #1: Find the user by their Clerk ID
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(inArray(users.clerkId, clerkUserId ? [clerkUserId] : []));
+
+      if (user) {
+        userId = user.id;
+      }
+
+      // SUBQUERY #2: Build a "viewerReactions" CTE (temporary table)
+      // This contains all reactions (like/dislike) by the current user
+      const viewerReactions = db.$with("viewr_reactions").as(
+        db
+          .select({
+            videoId: videoReactions.videoId,
+            type: videoReactions.type,
+          })
+          .from(videoReactions)
+          .where(inArray(videoReactions.userId, userId ? [userId] : []))
+      );
+
+      // MAIN QUERY: Fetch the video with all related data
       const [existingVideo] = await db
+        .with(viewerReactions) // include the "viewerReactions" subquery
         .select({
-          ...getTableColumns(videos),
+          ...getTableColumns(videos), // all video columns
           user: {
-            ...getTableColumns(users),
+            ...getTableColumns(users), // all user columns (video uploader)
           },
-          viewCount: db.$count(videoViews, eq(videos.userId, users.id)),
+          viewCount: db.$count(videoViews, eq(videos.userId, users.id)), // total views
+          likeCount: db.$count(
+            videoReactions,
+            and(
+              eq(videoReactions.videoId, videos.id),
+              eq(videoReactions.type, "like")
+            )
+          ),
+          dislikeCount: db.$count(
+            videoReactions,
+            and(
+              eq(videoReactions.videoId, videos.id),
+              eq(videoReactions.type, "dislike")
+            )
+          ),
+          viewerReaction: viewerReactions.type, // this user's reaction (if any)
         })
         .from(videos)
         .innerJoin(
           users,
-          eq(videos.userId, users.id) // match video.userId with user.id
+          eq(videos.userId, users.id) // match video uploader
         )
-        .where(eq(videos.id, input.id)); // find by id
+        .leftJoin(viewerReactions, eq(viewerReactions.videoId, videos.id))
+        .where(eq(videos.id, input.id)) // find by requested video ID
+        .groupBy(videos.id, users.id, viewerReactions.type);
 
-      // If no video, throw an error
+      // If no video found, throw a NOT_FOUND error
       if (!existingVideo) {
         throw new TRPCError({
           code: "NOT_FOUND",
         });
       }
 
-      // Return the video with its user
+      // Return the video + uploader + counts + viewer's reaction
       return existingVideo;
     }),
 });

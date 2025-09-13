@@ -141,6 +141,43 @@ export const videoViewUpdateSchema = createUpdateSchema(videoViews);
 export const videoViewSelectSchema = createSelectSchema(videoViews);
 
 /* ============================
+   VIDEO REACTIONS TABLE
+   ============================ */
+
+export const reactionType = pgEnum("reaction_type", ["like", "dislike"]);
+
+export const videoReactions = pgTable(
+  "video_reactions",
+  {
+    userId: uuid("user_id")
+      .references(() => users.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    videoId: uuid("video_id")
+      .references(() => videos.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    type: reactionType("type").notNull(),
+
+    // Timestamps
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({
+      name: "video_reactions_pk",
+      columns: [table.userId, table.videoId],
+    }),
+  ]
+);
+
+export const videoReactionInsertSchema = createInsertSchema(videoReactions);
+export const videoReactionUpdateSchema = createUpdateSchema(videoReactions);
+export const videoReactionSelectSchema = createSelectSchema(videoReactions);
+
+/* ============================
    RELATIONSHIPS
    ============================ */
 
@@ -148,6 +185,7 @@ export const videoViewSelectSchema = createSelectSchema(videoViews);
 export const userRelations = relations(users, ({ many }) => ({
   videos: many(videos),
   views: many(videoViews),
+  videoreactions: many(videoReactions),
 }));
 
 // One category → many videos
@@ -166,6 +204,7 @@ export const videoRelations = relations(videos, ({ one, many }) => ({
     references: [categories.id],
   }),
   views: many(videoViews),
+  videoReactions: many(videoReactions),
 }));
 
 // One video view → one user, one video
