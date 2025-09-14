@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import {
+  subscriptions,
   users,
   videoReactions,
   videos,
@@ -13,7 +14,7 @@ import {
   protectedProcedure,
 } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { and, eq, getTableColumns, inArray } from "drizzle-orm";
+import { and, eq, getTableColumns, inArray, isNotNull } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 
@@ -205,13 +206,28 @@ export const videosRouter = createTRPCRouter({
           .where(inArray(videoReactions.userId, userId ? [userId] : []))
       );
 
+      const viewerSubscriptions = db.$with("viewer_subscriptions").as(
+        db
+          .select()
+          .from(subscriptions)
+          .where(inArray(subscriptions.viewerId, userId ? [userId] : []))
+      );
+
       // MAIN QUERY: Fetch the video with all related data
       const [existingVideo] = await db
-        .with(viewerReactions) // include the "viewerReactions" subquery
+        .with(viewerReactions, viewerSubscriptions) // include the "viewerReactions" subquery
         .select({
           ...getTableColumns(videos), // all video columns
           user: {
             ...getTableColumns(users), // all user columns (video uploader)
+            subscriberCount: db.$count(
+              subscriptions,
+              eq(subscriptions.creatorId, users.id)
+            ),
+
+            isViewerSubscribed: isNotNull(viewerSubscriptions.viewerId).mapWith(
+              Boolean
+            ),
           },
           viewCount: db.$count(videoViews, eq(videos.userId, users.id)), // total views
           likeCount: db.$count(
@@ -236,8 +252,12 @@ export const videosRouter = createTRPCRouter({
           eq(videos.userId, users.id) // match video uploader
         )
         .leftJoin(viewerReactions, eq(viewerReactions.videoId, videos.id))
-        .where(eq(videos.id, input.id)) // find by requested video ID
-        .groupBy(videos.id, users.id, viewerReactions.type);
+        .leftJoin(
+          viewerSubscriptions,
+          eq(viewerSubscriptions.creatorId, users.id)
+        )
+        .where(eq(videos.id, input.id)); // find by requested video ID
+      // .groupBy(videos.id, users.id, viewerReactions.type);
 
       // If no video found, throw a NOT_FOUND error
       if (!existingVideo) {
