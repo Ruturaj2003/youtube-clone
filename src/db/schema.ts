@@ -264,3 +264,15 @@ export const subscriptionRelations = relations(subscriptions, ({ one }) => ({
     relationName: "subscriptions_creator_id_fkey",
   }),
 }));
+
+// One video reaction → one user, one video
+export const videoReactionRelations = relations(videoReactions, ({ one }) => ({
+  user: one(users, {
+    fields: [videoReactions.userId],
+    references: [users.id],
+  }),
+  video: one(videos, {
+    fields: [videoReactions.videoId],
+    references: [videos.id],
+  }),
+}));
