@@ -14,6 +14,9 @@ const VideoPage = async ({ params }: VideoPageProps) => {
     id: videoId,
   });
 
+  // TODO : Later Change to prfInfite
+  void trpc.comments.getMany.prefetch({ videoId: videoId });
+
   return (
     <HydrateClient>
       {/* Video view from videos not Studio */}

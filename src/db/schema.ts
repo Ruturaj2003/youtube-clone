@@ -204,6 +204,31 @@ export const subscriptions = pgTable(
 );
 
 /* ============================
+   VIDEO COMMENTS TABLE
+   ============================ */
+
+export const comments = pgTable("comments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+
+  videoId: uuid("video_id")
+    .references(() => videos.id, { onDelete: "cascade" })
+    .notNull(),
+  value: text("value").notNull(),
+
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export const commentsInsertSchema = createInsertSchema(comments);
+export const commentsUpdateSchema = createUpdateSchema(comments);
+export const commentsSelectSchema = createSelectSchema(comments);
+
+/* ============================
    RELATIONSHIPS
    ============================ */
 
@@ -218,6 +243,7 @@ export const userRelations = relations(users, ({ many }) => ({
   subscribers: many(subscriptions, {
     relationName: "subscriptions_creator_id_fkey",
   }), // A user can have many subscribers
+  comments: many(comments),
 }));
 
 // One category → many videos
@@ -237,6 +263,7 @@ export const videoRelations = relations(videos, ({ one, many }) => ({
   }),
   views: many(videoViews), // A video can have many views
   videoReactions: many(videoReactions), // A video can have many reactions
+  comments: many(comments),
 }));
 
 // One video view → one user, one video
@@ -276,3 +303,17 @@ export const videoReactionRelations = relations(videoReactions, ({ one }) => ({
     references: [videos.id],
   }),
 }));
+
+// One comment → one user, one video
+export const commentRelations = relations(comments, ({ one }) => {
+  return {
+    user: one(users, {
+      fields: [comments.userId],
+      references: [users.id],
+    }),
+    video: one(videos, {
+      fields: [comments.videoId],
+      references: [videos.id],
+    }),
+  };
+});
