@@ -49,6 +49,8 @@ Yes it was a 10 day break
 
 ## 25/09 : 3: 13
 
+## 27/09 : 3: 13
+
 <!--
 
 http://localhost:3000/videos/ce723dd5-2cf8-45b4-afcc-5f1d87e0873a
