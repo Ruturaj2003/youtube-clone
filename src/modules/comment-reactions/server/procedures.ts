@@ -59,9 +59,9 @@ export const commentReactionsRouter = createTRPCRouter({
       return createdCommentReaction;
     }),
   dislike: protectedProcedure
-    .input(z.object({ videoId: z.string().uuid() }))
+    .input(z.object({ commentId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const { videoId: commentId } = input;
+      const { commentId } = input;
       const { id: userId } = ctx.user;
 
       const [existingCommentReaction] = await db
