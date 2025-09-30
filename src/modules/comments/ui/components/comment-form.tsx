@@ -20,10 +20,20 @@ import { z } from "zod";
 
 interface CommentFormProps {
   videoId: string;
+  parentId?: string;
   onSuccess?: () => void;
+  onCancel?: () => void;
+
+  variant?: "comment" | "reply";
 }
 
-export const CommentForm = ({ videoId, onSuccess }: CommentFormProps) => {
+export const CommentForm = ({
+  videoId,
+  onSuccess,
+  onCancel,
+  parentId,
+  variant = "comment",
+}: CommentFormProps) => {
   const clerk = useClerk();
   const { user } = useUser();
 
@@ -48,11 +58,17 @@ export const CommentForm = ({ videoId, onSuccess }: CommentFormProps) => {
     defaultValues: {
       videoId,
       value: "",
+      parentId: parentId,
     },
   });
 
   const handleSubmit = (value: z.infer<typeof commentsInsertSchema>) => {
     create.mutate(value);
+  };
+
+  const handleCancel = () => {
+    form.reset();
+    onCancel?.();
   };
 
   return (
@@ -76,7 +92,9 @@ export const CommentForm = ({ videoId, onSuccess }: CommentFormProps) => {
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Add a Comment"
+                      placeholder={
+                        variant === "reply" ? "Add a Reply" : "Add a Comment"
+                      }
                       className="resize-none bg-transparent overflow-hidden min-h-0"
                     />
                   </FormControl>
@@ -88,8 +106,13 @@ export const CommentForm = ({ videoId, onSuccess }: CommentFormProps) => {
           />
 
           <div className="justify-end gap-2 mt-2 flex">
+            {onCancel && (
+              <Button variant={"ghost"} type="button" onClick={handleCancel}>
+                Cancel
+              </Button>
+            )}
             <Button disabled={create.isPending} type="submit" size={"sm"}>
-              Comment
+              {variant === "reply" ? "Reply" : "Comment"}
             </Button>
           </div>
         </div>
