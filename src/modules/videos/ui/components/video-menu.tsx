@@ -19,7 +19,11 @@ interface VideoMenuProps {
   onRemove?: () => void;
 }
 
-export const VideoMenu = ({ videoId, variant, onRemove }: VideoMenuProps) => {
+export const VideoMenu = ({
+  videoId,
+  variant = "ghost",
+  onRemove,
+}: VideoMenuProps) => {
   const onShare = () => {
     // TODO : CHANGE IF not using VERCEL for Hosting
     const fullUrl = `${

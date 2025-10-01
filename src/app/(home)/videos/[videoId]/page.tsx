@@ -20,6 +20,11 @@ const VideoPage = async ({ params }: VideoPageProps) => {
     limit: DEFAULT_LIMIT,
   });
 
+  void trpc.suggestions.getMany.prefetchInfinite({
+    videoId: videoId,
+    limit: DEFAULT_LIMIT,
+  });
+
   return (
     <HydrateClient>
       {/* Video view from videos not Studio */}
