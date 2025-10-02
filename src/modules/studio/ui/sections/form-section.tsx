@@ -13,6 +13,7 @@ import {
   ImagePlusIcon,
   LockIcon,
   MoreVerticalIcon,
+  RefreshCwIcon,
   RotateCcwIcon,
   TrashIcon,
 } from "lucide-react";
@@ -139,6 +140,17 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     },
   });
 
+  const revalidate = trpc.videos.revalidate.useMutation({
+    onSuccess: () => {
+      utils.studio.getMany.invalidate();
+      utils.studio.getOne.invalidate({ id: videoId });
+      toast.success("Refreshed");
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+  });
+
   // Form submit
   const onSubmit = (data: z.infer<typeof videoUpdateSchema>) => {
     update.mutate(data);
@@ -183,6 +195,12 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => revalidate.mutate({ id: videoId })}
+                  >
+                    <RefreshCwIcon className="size-4 mr-2" />
+                    Refresh
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => remove.mutate({ id: videoId })}
                   >
