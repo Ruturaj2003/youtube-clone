@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { VideoMenu } from "./video-menu";
 import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const videoRowCardVariants = cva("group flex min-w-0", {
   variants: {
@@ -42,11 +43,65 @@ interface videoRowCardProps extends VariantProps<typeof videoRowCardVariants> {
   onRemove?: () => void;
 }
 
-export const videoRowCardSkeleton = () => {
-  return <div className="">Skeleton</div>;
-};
+export const VideoRowCardSkeleton = ({
+  size = "default",
+}: {
+  size: "default" | "compact";
+}) => {
+  return (
+    <div className={videoRowCardVariants({ size }) + " mb-4"}>
+      {/* Thumbnail */}
+      <div className={thumbnailVariants({ size })}>
+        <Skeleton className="w-full h-full rounded-md" />
+      </div>
 
-export const VideoRowCard = ({ data, onRemove, size }: videoRowCardProps) => {
+      {/* Info section */}
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between gap-x-2">
+          <div className="flex-1 min-w-0 space-y-2">
+            {/* Title */}
+            <Skeleton
+              className={size === "compact" ? "h-4 w-3/4" : "h-5 w-4/5"}
+            />
+            {size === "default" && (
+              <>
+                {/* Views & Likes */}
+                <Skeleton className="h-4 w-1/3" />
+
+                {/* User Info */}
+                <div className="flex items-center gap-2 my-3">
+                  <Skeleton className="h-6 w-6 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+
+                {/* Description */}
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-2/3" />
+              </>
+            )}
+
+            {size === "compact" && (
+              <>
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-3 w-24" />
+              </>
+            )}
+          </div>
+
+          {/* Menu */}
+          <div className="flex-none">
+            <Skeleton className="h-6 w-6 rounded-md" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+export const VideoRowCard = ({
+  data,
+  onRemove,
+  size = "default",
+}: videoRowCardProps) => {
   const compactViews = useMemo(() => {
     return Intl.NumberFormat("en", {
       notation: "compact",
