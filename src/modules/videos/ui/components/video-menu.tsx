@@ -5,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { APP_URL } from "@/constants";
 import {
   ListPlusIcon,
   MoreVertical,
@@ -26,9 +27,7 @@ export const VideoMenu = ({
 }: VideoMenuProps) => {
   const onShare = () => {
     // TODO : CHANGE IF not using VERCEL for Hosting
-    const fullUrl = `${
-      process.env.VERCEL_URL || "http://localhost:3000"
-    }/videos/${videoId}`;
+    const fullUrl = `${APP_URL}/videos/${videoId}`;
     navigator.clipboard.writeText(fullUrl);
     toast.success("Copied to Clipboard");
   };

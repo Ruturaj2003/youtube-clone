@@ -50,7 +50,7 @@ import Link from "next/link";
 import { snakeCaseToTitle } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { THUMBNAIL_FALLBACK } from "@/constants";
+import { APP_URL, THUMBNAIL_FALLBACK } from "@/constants";
 import { ThumbnailUploadModal } from "../components/thumbnail-upload-modal";
 
 // ----------------------------------
@@ -86,9 +86,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
   const utils = trpc.useUtils();
 
   // TODO : CHANGE IF NOT VERCEL
-  const fullUrl = `${
-    process.env.VERCEL_URL || "http://localhost:3000"
-  }/videos/${videoId}`;
+  const fullUrl = `${APP_URL}/videos/${videoId}`;
 
   const [thumbnailModalOpen, setThumbnailModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
