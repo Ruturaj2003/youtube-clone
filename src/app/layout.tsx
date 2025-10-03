@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title: "ViewTube",
   description: "YouTube Clone",
   icons: {
-    icon: "./logo.svg",
+    icon: "/logo.svg",
   },
 };
 
