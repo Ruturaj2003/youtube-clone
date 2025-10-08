@@ -270,6 +270,51 @@ export const commentReactions = pgTable(
 );
 
 /* ============================
+  PLAYLIST TABLE
+   ============================ */
+export const playlists = pgTable("playlists", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  description: text("description"),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/* ============================
+   PLAYLIST VIDEOS TABLE
+   ============================ */
+
+export const playlistVideos = pgTable(
+  "playlist_videos",
+  {
+    playlistId: uuid("playlist_id")
+      .references(() => playlists.id, { onDelete: "cascade" })
+      .notNull(),
+
+    videoId: uuid("video_id")
+      .references(() => videos.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+
+    // Timestamps
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({
+      name: "playlist_videos_pk",
+      columns: [table.playlistId, table.videoId],
+    }),
+  ]
+);
+
+/* ============================
    RELATIONSHIPS
    ============================ */
 
@@ -286,6 +331,7 @@ export const userRelations = relations(users, ({ many }) => ({
   }), // A user can have many subscribers
   comments: many(comments),
   commentReactions: many(commentReactions),
+  playlists: many(playlists),
 }));
 
 // One category → many videos
@@ -306,6 +352,7 @@ export const videoRelations = relations(videos, ({ one, many }) => ({
   views: many(videoViews), // A video can have many views
   videoReactions: many(videoReactions), // A video can have many reactions
   comments: many(comments),
+  playlistVideos: many(playlistVideos),
 }));
 
 // One video view → one user, one video
@@ -383,3 +430,24 @@ export const commentReactionRelations = relations(
     }),
   })
 );
+
+// Play list video Relations
+
+export const playlistVideoRelations = relations(playlistVideos, ({ one }) => ({
+  playlist: one(playlists, {
+    fields: [playlistVideos.playlistId],
+    references: [playlists.id],
+  }),
+  video: one(videos, {
+    fields: [playlistVideos.playlistId],
+    references: [videos.id],
+  }),
+}));
+
+export const playlistRelation = relations(playlists, ({ one, many }) => ({
+  user: one(users, {
+    fields: [playlists.userId],
+    references: [users.id],
+  }),
+  playlistVideos: many(playlistVideos),
+}));
