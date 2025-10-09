@@ -439,7 +439,7 @@ export const playlistVideoRelations = relations(playlistVideos, ({ one }) => ({
     references: [playlists.id],
   }),
   video: one(videos, {
-    fields: [playlistVideos.playlistId],
+    fields: [playlistVideos.videoId],
     references: [videos.id],
   }),
 }));
