@@ -169,9 +169,9 @@ const VideoSectionSuspense = () => {
                           ? format(new Date(video.createdAt), "dd MMM yyyy") // e.g. "21 Aug 2025"
                           : "—"}
                       </TableCell>
-                      <TableCell>Views</TableCell>
-                      <TableCell>Comments</TableCell>
-                      <TableCell>Likes</TableCell>
+                      <TableCell>{video.viewCount}</TableCell>
+                      <TableCell>{video.commentCount}</TableCell>
+                      <TableCell>{video.likeCount}</TableCell>
                     </TableRow>
                   </Link>
                 );
