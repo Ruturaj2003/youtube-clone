@@ -44,11 +44,13 @@ export const PlaylistAddModal = ({
   );
 
   const addVideo = trpc.playlists.addVideo.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       utils.playlists.getManyForVideo.invalidate({
         videoId: videoId,
+        limit: DEFAULT_LIMIT,
       });
       toast.success("Playlist Updated");
+      utils.playlists.getOne.invalidate({ id: data.playlistId });
     },
     onError: () => toast.error("Something went wrong"),
   });
