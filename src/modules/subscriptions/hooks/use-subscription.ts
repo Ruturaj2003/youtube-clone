@@ -19,9 +19,8 @@ export const useSubscription = ({
   const subscribe = trpc.subscriptions.create.useMutation({
     onSuccess: () => {
       toast.success("Subscribed");
-      // TODO: re-invalidate subscriptions getMany, users,getOne
       utils.videos.getManySubscribed.invalidate();
-
+      utils.users.getOne.invalidate({ id: userId });
       //   Referesh the Sub count , so give real time sub count
       if (fromVideoId) {
         utils.videos.getOne.invalidate({ id: fromVideoId });
@@ -39,8 +38,8 @@ export const useSubscription = ({
   const unSubscribe = trpc.subscriptions.remove.useMutation({
     onSuccess: () => {
       toast.success("UnSubscribed");
-      // TODO: re-invalidate subscriptions getMany, users,getOne
       utils.videos.getManySubscribed.invalidate();
+      utils.users.getOne.invalidate({ id: userId });
       //   Referesh the Sub count , so give real time sub count
       if (fromVideoId) {
         utils.videos.getOne.invalidate({ id: fromVideoId });
