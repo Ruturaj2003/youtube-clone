@@ -9,40 +9,35 @@ import { z } from "zod";
 const f = createUploadthing();
 
 export const ourFileRouter = {
-  // File route for uploading video thumbnails
   thumbnailUploader: f({
     image: {
-      maxFileSize: "4MB", // Only allow up to 4MB
-      maxFileCount: 1, // Only one thumbnail per upload
+      maxFileSize: "4MB",
+      maxFileCount: 1,
     },
   })
-    // Validate input: must include a videoId
     .input(
       z.object({
         videoId: z.string().uuid(),
       })
     )
-    // Middleware: check auth, validate ownership, handle old thumbnail cleanup
     .middleware(async ({ input }) => {
       const { userId: clerkUserId } = await auth();
       if (!clerkUserId) throw new UploadThingError("Unauthorized");
 
-      // Get current user
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.clerkId, clerkUserId));
 
-      // Check if video belongs to user
       const [existingVideo] = await db
         .select({
           thumbnailKey: videos.thumbnailKey,
         })
         .from(videos)
         .where(and(eq(videos.id, input.videoId), eq(videos.userId, user.id)));
-      if (!existingVideo) throw new UploadThingError("Bad Requst");
 
-      // If a thumbnail already exists, delete it
+      if (!existingVideo) throw new UploadThingError("Bad Request");
+
       if (existingVideo.thumbnailKey) {
         const utApi = new UTApi();
         await utApi.deleteFiles(existingVideo.thumbnailKey);
@@ -58,7 +53,6 @@ export const ourFileRouter = {
 
       return { user, ...input };
     })
-    // After upload: save new thumbnail URL and key
     .onUploadComplete(async ({ metadata, file }) => {
       await db
         .update(videos)
@@ -75,7 +69,47 @@ export const ourFileRouter = {
 
       return { uploadedBy: metadata.user.id };
     }),
+
+  bannerUploader: f({
+    image: {
+      maxFileSize: "4MB",
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async () => {
+      const { userId: clerkUserId } = await auth();
+      if (!clerkUserId) throw new UploadThingError("Unauthorized");
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.clerkId, clerkUserId));
+
+      if (!user.id) throw new UploadThingError("Unauthorized");
+
+      if (user.bannerKey) {
+        const utApi = new UTApi();
+
+        await utApi.deleteFiles(user.bannerKey);
+        await db
+          .update(users)
+          .set({ bannerKey: null, bannerUrl: null })
+          .where(eq(users.id, user.id));
+      }
+
+      return { userId: user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      await db
+        .update(users)
+        .set({
+          bannerUrl: file.url,
+          bannerKey: file.key,
+        })
+        .where(eq(users.id, metadata.userId));
+
+      return { uploadedBy: metadata.userId };
+    }),
 } satisfies FileRouter;
 
-// Export router type for type safety
 export type OurFileRouter = typeof ourFileRouter;
