@@ -20,6 +20,7 @@ export const useSubscription = ({
     onSuccess: () => {
       toast.success("Subscribed");
       utils.videos.getManySubscribed.invalidate();
+      utils.subscriptions.getMany.invalidate();
       utils.users.getOne.invalidate({ id: userId });
       //   Referesh the Sub count , so give real time sub count
       if (fromVideoId) {
@@ -39,6 +40,7 @@ export const useSubscription = ({
     onSuccess: () => {
       toast.success("UnSubscribed");
       utils.videos.getManySubscribed.invalidate();
+      utils.subscriptions.getMany.invalidate();
       utils.users.getOne.invalidate({ id: userId });
       //   Referesh the Sub count , so give real time sub count
       if (fromVideoId) {
