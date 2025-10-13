@@ -1,6 +1,6 @@
 "use client";
 import { InfiniteScroll } from "@/components/infinite-scroll";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { DEFAULT_LIMIT } from "@/constants";
 
 import { trpc } from "@/trpc/client";
