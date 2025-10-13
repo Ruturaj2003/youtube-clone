@@ -54,7 +54,9 @@ export const UserPageInfo = ({ user }: UserPageInfoProps) => {
             asChild
             className="w-full mt-3 rounded-full font-medium"
           >
-            <Link href="/studio">Go to Studio</Link>
+            <Link prefetch href="/studio">
+              Go to Studio
+            </Link>
           </Button>
         ) : (
           <SubcriptionButton
@@ -96,7 +98,9 @@ export const UserPageInfo = ({ user }: UserPageInfoProps) => {
                 asChild
                 className="rounded-full px-6 font-medium"
               >
-                <Link href="/studio">Go to Studio</Link>
+                <Link prefetch href="/studio">
+                  Go to Studio
+                </Link>
               </Button>
             ) : (
               <SubcriptionButton

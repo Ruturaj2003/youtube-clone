@@ -124,6 +124,7 @@ const VideoSectionSuspense = () => {
               .map((video) => {
                 return (
                   <Link
+                    prefetch
                     legacyBehavior
                     href={`/studio/videos/${video.id}`}
                     key={video.id}
