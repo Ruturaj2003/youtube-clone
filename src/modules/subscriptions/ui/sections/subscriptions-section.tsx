@@ -8,11 +8,14 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
-import { SubscriptionItem } from "../components/subscription-item";
+import {
+  SubscriptionItem,
+  SubscriptionItemSkeleton,
+} from "../components/subscription-item";
 
 export const SubscriptionsSection2 = () => {
   return (
-    <Suspense fallback={<SubscriptionSectionSkeleton2 />}>
+    <Suspense fallback={<SubscriptionsListSkeleton count={5} />}>
       <ErrorBoundary
         fallback={"There seems to be some error in Videos Section"}
       >
@@ -21,22 +24,11 @@ export const SubscriptionsSection2 = () => {
     </Suspense>
   );
 };
-
-const SubscriptionSectionSkeleton2 = () => {
-  // Let's render 8 placeholders (you can adjust)
-  const placeholders = Array.from({ length: 8 });
-
+const SubscriptionsListSkeleton = ({ count }: { count: number }) => {
   return (
-    <div className="flex flex-col gap-4 gap-y-10">
-      {placeholders.map((_, i) => (
-        <div key={i} className="flex flex-col gap-2">
-          {/* Thumbnail */}
-          <Skeleton className="aspect-video w-full rounded-lg" />
-          {/* Title */}
-          <Skeleton className="h-4 w-3/4" />
-          {/* Description / extra line */}
-          <Skeleton className="h-3 w-1/2" />
-        </div>
+    <div className="flex flex-col gap-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <SubscriptionItemSkeleton key={i} />
       ))}
     </div>
   );
