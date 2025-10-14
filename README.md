@@ -1,36 +1,187 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔹 NewTube – (YouTube Clone)
 
-## Getting Started
+## 🧠 Overview
 
-First, run the development server:
+**NewTube** is a modern, high-performance video sharing platform built using the **Next.js 15 + tRPC + Drizzle** full-stack architecture.  
+It provides end-to-end type safety, modular architecture, and real-time interaction for an immersive and scalable video-sharing experience.
+
+## 💡 Project Idea / Inspiration
+
+This project was built following the **Code with Antonio** tutorial to learn how to create a full-stack video-sharing platform using **Next.js, tRPC, Drizzle, Clerk, and Mux**.
+
+## 🎯 Why I Built This
+
+I built this project to **learn how to work on larger projects** and understand **video management** and **tRPC**, including how tRPC works in a full-stack application.
+
+## 🧰 Tech Stack
+
+**Frontend**
+
+- Next.js 15 (App Router + Server Components)
+- React 19
+- TypeScript 5
+- Tailwind CSS 3
+- ShadCn
+- Lucide React
+
+**Backend**
+
+- tRPC 11
+- Drizzle ORM 0.40
+- Neon PostgreSQL
+- Upstash Redis
+- Zod 3.24
+
+**Third-Party Integrations**
+
+- Clerk – Authentication & Access Control
+- Mux – Video Processing & Streaming
+- UploadThing – File Uploads & CDN
+- Upstash Workflow – Background Tasks
+
+## ⚙️ Environment Variables
+
+Create a `.env.local` file and configure the following:
 
 ```bash
-npm run dev
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/newtube"
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_xxx"
+CLERK_SECRET_KEY="sk_test_xxx"
+CLERK_WEBHOOK_SECRET="whsec_xxx"
+
+# Mux Video Service
+MUX_TOKEN_ID="your_mux_token_id"
+MUX_TOKEN_SECRET="your_mux_token_secret"
+MUX_WEBHOOK_SECRET="your_mux_webhook_secret"
+
+# UploadThing File Upload
+UPLOADTHING_TOKEN="your_uploadthing_token_secret"
+
+# Upstash Redis
+UPSTASH_REDIS_REST_URL="https://xxx.upstash.io"
+UPSTASH_REDIS_REST_TOKEN="your_redis_token"
+
+# Upstash Workflow
+QSTASH_TOKEN="your_workflow_token"
+UPSTASH_WORKFLOW_URL="https://xxx.ngrok-free.app"
+QSTASH_CURRENT_SIGNING_KEY="sig_xxx"
+QSTASH_NEXT_SIGNING_KEY="sig_xxx"
+
+
+
+# App Config
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+## 🚀 Setup Instructions
+
+```bash
+# Clone the repo
+git clone https://github.com/lucas-ellwanger/newtube.git
+cd newtube
+
+# Install dependencies (bun recommended)
+bun install
 # or
-yarn dev
-# or
-pnpm dev
-# or
+npm install
+
+# Setup the database
+bun db:push
+bun db:migrate
+bun db:seed   # optional
+
+# Start the dev server
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Access:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Drizzle Studio: [http://localhost:4983](http://localhost:4983)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+For production:
 
-## Learn More
+```bash
+bun build
+bun start
+# or deploy to Vercel
+npx vercel --prod
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🌐 Live Demo
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🔗 [View Deployed App](https://youtube-clone-kohl-rho.vercel.app/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🖼️ Screenshots
 
-## Deploy on Vercel
+Due to Mux limitations, only a few videos are available in this demo.  
+This project is essentially a YouTube clone, so not all content is needed to be shown here.  
+You can explore the app yourself — for best performance, use videos around **5 MB or smaller**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Home Page
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+![Home](./screenshots/home.png)
+
+### Video Page
+
+![Video](./screenshots/video.png)
+
+### Creator Studio
+
+![Studio](./screenshots/studio.png)
+
+### Liked Videos
+
+![Liked Videos](./screenshots/liked.png)
+
+### Upload Video
+
+![Upload Video](./screenshots/upload_video.png)
+
+## 🔮 Key Features
+
+- 🎥 Advanced video player with quality controls
+- 🎬 Real-time video processing with Mux
+- 📝 Automatic video transcription
+- 🖼️ Smart thumbnail generation
+- 📊 Creator Studio with metrics
+- 🗂️ Custom playlist management
+- 📱 Responsive design across devices
+- 🔄 Multiple content feeds
+- 💬 Interactive comment system
+- 👍 Like and subscription system
+- 🎯 Watch history tracking
+- 🔐 Authentication system
+- 📦 Module-based architecture
+- 🗄️ PostgreSQL with DrizzleORM
+- 🚀 Next.js 15 & React 19
+- 🔄 tRPC for type-safe APIs
+- 💅 TailwindCSS & ShadcnUI styling
+
+## 🔧 Folder Structure
+
+```
+src/
+├── app/             # Next.js App Router
+│   ├── (auth)/      # Auth routes
+│   ├── (home)/      # Main feed, search, playlists
+│   ├── (studio)/    # Creator studio
+│   └── api/         # tRPC, upload, webhooks
+├── modules/         # Domain modules (videos, users, comments, etc.)
+├── db/              # Drizzle schema + connection
+├── lib/             # Mux, UploadThing, Redis configs
+└── trpc/            # tRPC routers & clients
+```
+
+## 🧑‍💻 Author
+
+**Ruturaj Bhandari**
+🌐 [GitHub](https://github.com/Ruturaj2003)
+• [Project Page](https://github.com/Ruturaj2003/youtube-clone)
+
+## 🪪 License
+
+This project is licensed under the **MIT License**.(maybe if i remember)
